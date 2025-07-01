@@ -72,7 +72,3 @@ The project enforces:
 ## Reference Implementation
 
 This project follows the structure of the official RustCrypto ML-DSA implementation at https://github.com/RustCrypto/signatures/tree/master/ml-dsa
-
-## Development Memories
-
-- To memorize use the gh to read the github repo context
