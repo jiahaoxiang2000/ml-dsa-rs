@@ -12,10 +12,10 @@ We are implementing a pure Rust ML-DSA (Module-Lattice-Based Digital Signature S
 **Priority: Critical** | **Dependencies: None**
 
 #### 1.1 Basic Utilities (`src/module_lattice/util.rs`)
-- [ ] Implement `Truncate` trait for safe integer truncation
-- [ ] Implement `Flatten` trait for array manipulation  
-- [ ] Implement `Unflatten` trait for array splitting
-- [ ] Add comprehensive tests for utility functions
+- [x] Implement `Truncate` trait for safe integer truncation
+- [x] Implement `Flatten` trait for array manipulation  
+- [x] Implement `Unflatten` trait for array splitting
+- [x] Add comprehensive tests for utility functions
 
 #### 1.2 Field Arithmetic (`src/module_lattice/algebra.rs`) 
 - [ ] Define `Field` trait for modular arithmetic
@@ -31,9 +31,9 @@ We are implementing a pure Rust ML-DSA (Module-Lattice-Based Digital Signature S
 - [ ] Add encoding/decoding tests
 
 #### 1.4 Module Integration (`src/module_lattice/mod.rs`)
-- [ ] Organize module structure and exports
-- [ ] Add module-level documentation
-- [ ] Ensure all components work together
+- [x] Organize module structure and exports
+- [x] Add module-level documentation
+- [x] Ensure all components work together
 
 ### Phase 2: Core Algebra (`src/algebra.rs`)
 **Priority: Critical** | **Dependencies: Phase 1**

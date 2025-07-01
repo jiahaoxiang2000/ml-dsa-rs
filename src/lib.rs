@@ -1,16 +1,28 @@
 //! Pure Rust implementation of ML-DSA (formerly known as CRYSTALS-Dilithium) as
 //! described in FIPS-204 (final)
 
-#![forbid(unsafe_code)]
 #![warn(missing_docs, rust_2018_idioms)]
+// Note: unsafe code is allowed only in module_lattice for performance-critical operations
 
+// Foundation module that needs unsafe for array operations
+pub mod module_lattice;
+
+// All other modules forbid unsafe code
+#[forbid(unsafe_code)]
 pub mod algebra;
+#[forbid(unsafe_code)]
 pub mod crypto;
+#[forbid(unsafe_code)]
 pub mod encode;
+#[forbid(unsafe_code)]
 pub mod hint;
+#[forbid(unsafe_code)]
 pub mod ntt;
+#[forbid(unsafe_code)]
 pub mod param;
+#[forbid(unsafe_code)]
 pub mod sampling;
+#[forbid(unsafe_code)]
 pub mod util;
 
 use signature::{Error, SignatureEncoding};
