@@ -18,17 +18,17 @@ We are implementing a pure Rust ML-DSA (Module-Lattice-Based Digital Signature S
 - [x] Add comprehensive tests for utility functions
 
 #### 1.2 Field Arithmetic (`src/module_lattice/algebra.rs`) 
-- [ ] Define `Field` trait for modular arithmetic
-- [ ] Implement basic field element operations (add, sub, mul, neg)
-- [ ] Implement modular reduction and inversion
-- [ ] Add field arithmetic tests
+- [x] Define `Field` trait for modular arithmetic
+- [x] Implement basic field element operations (add, sub, mul, neg)
+- [x] Implement modular reduction and inversion
+- [x] Add field arithmetic tests
 
 #### 1.3 Encoding Framework (`src/module_lattice/encode.rs`)
-- [ ] Define `ArraySize` trait using typenum
-- [ ] Implement `EncodingSize` trait for bit-level encoding
-- [ ] Implement `Encode` trait for polynomial encoding/decoding
-- [ ] Implement `VectorEncodingSize` for vector encoding
-- [ ] Add encoding/decoding tests
+- [x] Define `ArraySize` trait using typenum
+- [x] Implement `EncodingSize` trait for bit-level encoding
+- [x] Implement `Encode` trait for polynomial encoding/decoding
+- [x] Implement `VectorEncodingSize` for vector encoding
+- [x] Add encoding/decoding tests
 
 #### 1.4 Module Integration (`src/module_lattice/mod.rs`)
 - [x] Organize module structure and exports

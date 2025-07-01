@@ -15,11 +15,9 @@
 /// arrays into arrays of arrays.
 pub mod util;
 
-// TODO: Implement in Phase 1.2
-// /// Linear algebra with degree-256 polynomials over a prime-order field, vectors of such
-// /// polynomials, and NTT polynomials / vectors
-// pub mod algebra;
+/// Linear algebra with degree-256 polynomials over a prime-order field, vectors of such
+/// polynomials, and NTT polynomials / vectors
+pub mod algebra;
 
-// TODO: Implement in Phase 1.3  
-// /// Packing of polynomials into coefficients with a specified number of bits.
-// pub mod encode;
+/// Packing of polynomials into coefficients with a specified number of bits.
+pub mod encode;
