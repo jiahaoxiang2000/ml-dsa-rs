@@ -32,6 +32,18 @@ pub trait Field: Copy + Default + Debug + PartialEq {
     /// Reduce a value that is at most 2*Q-1 to the range [0, Q)
     fn small_reduce(x: Self::Int) -> Self::Int;
     /// Reduce a larger value using Barrett reduction
+    /// 
+    /// Barrett reduction efficiently computes x mod q without expensive division
+    /// It uses the precomputed multiplier to approximate division by q.
+    /// Mathematical principle: ⌊x/q⌋ ≈ ⌊(x * ⌊2^k/q⌋) / 2^k⌋
+    /// where k = BARRETT_SHIFT is chosen large enough for accuracy
+    ///
+    /// This replaces slow division with fast operations:
+    /// 1. One multiplication: x * BARRETT_MULTIPLIER
+    /// 2. One bit shift: >> BARRETT_SHIFT (equivalent to division by 2^k)
+    /// 3. One subtraction: x - quotient * q
+    ///
+    /// The approximation may be off by at most 1, which small_reduce() handles
     fn barrett_reduce(x: Self::Long) -> Self::Int;
 }
 
@@ -39,12 +51,12 @@ pub trait Field: Copy + Default + Debug + PartialEq {
 /// for that struct.  The caller must specify:
 ///
 /// * `$field`: The name of the zero-sized struct to be created
-/// * `$q`: The prime number that defines the field.
 /// * `$int`: The primitive integer type to be used to represent members of the field
 /// * `$long`: The primitive integer type to be used to represent products of two field members.
 ///   This type should have roughly twice the bits of `$int`.
 /// * `$longlong`: The primitive integer type to be used to represent products of three field
 ///   members. This type should have roughly four times the bits of `$int`.
+/// * `$q`: The prime number that defines the field.
 #[macro_export]
 macro_rules! define_field {
     ($field:ident, $int:ty, $long:ty, $longlong:ty, $q:literal) => {
@@ -63,6 +75,8 @@ macro_rules! define_field {
             #[allow(clippy::as_conversions)]
             const BARRETT_SHIFT: usize = 2 * (Self::Q.ilog2() + 1) as usize;
             #[allow(clippy::integer_division_remainder_used)]
+            // Precomputed ⌊2^k/q⌋ where k = BARRETT_SHIFT
+            // This approximates 1/q as a rational number for fast division
             const BARRETT_MULTIPLIER: Self::LongLong = (1 << Self::BARRETT_SHIFT) / Self::QLL;
 
             fn small_reduce(x: Self::Int) -> Self::Int {
@@ -459,19 +473,19 @@ mod test {
         // Test basic field operations
         let a = Elem::<TestField>::new(5);
         let b = Elem::<TestField>::new(7);
-        
+
         // Addition
         let sum = a + b;
         assert_eq!(sum.0, 12);
-        
-        // Subtraction  
+
+        // Subtraction
         let diff = a - b;
         assert_eq!(diff.0, 15); // 5 - 7 = -2 ≡ 15 (mod 17)
-        
+
         // Multiplication
         let prod = a * b;
         assert_eq!(prod.0, 1); // 5 * 7 = 35 ≡ 1 (mod 17)
-        
+
         // Negation
         let neg_a = -a;
         assert_eq!(neg_a.0, 12); // -5 ≡ 12 (mod 17)
@@ -483,7 +497,7 @@ mod test {
         assert_eq!(TestField::small_reduce(16), 16);
         assert_eq!(TestField::small_reduce(17), 0);
         assert_eq!(TestField::small_reduce(18), 1);
-        
+
         // Test Barrett reduction
         assert_eq!(TestField::barrett_reduce(35), 1); // 35 ≡ 1 (mod 17)
         assert_eq!(TestField::barrett_reduce(34), 0); // 34 ≡ 0 (mod 17)
@@ -493,21 +507,21 @@ mod test {
     fn polynomial_arithmetic() {
         let mut p1_coeffs = Array::default();
         let mut p2_coeffs = Array::default();
-        
+
         // Set some test coefficients
         p1_coeffs[0] = Elem::<TestField>::new(1);
         p1_coeffs[1] = Elem::<TestField>::new(2);
         p2_coeffs[0] = Elem::<TestField>::new(3);
         p2_coeffs[1] = Elem::<TestField>::new(4);
-        
+
         let p1 = Polynomial::new(p1_coeffs);
         let p2 = Polynomial::new(p2_coeffs);
-        
+
         // Addition
         let sum = &p1 + &p2;
         assert_eq!(sum.0[0].0, 4);
         assert_eq!(sum.0[1].0, 6);
-        
+
         // Subtraction
         let diff = &p1 - &p2;
         assert_eq!(diff.0[0].0, 15); // 1 - 3 = -2 ≡ 15 (mod 17)
