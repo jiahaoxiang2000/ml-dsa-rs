@@ -268,49 +268,6 @@ The implementation includes comprehensive benchmarks in `benches/ml_dsa.rs`:
 - **Raw Bytes**: Direct byte array serialization
 - **Const Generics**: Compile-time signature size specification
 
-## Data Flow Architecture
-
-```mermaid
-graph TB
-    subgraph "Input Layer"
-        MSG[Message]
-        PARAMS[Parameter Set]
-        KEYS[Keys]
-    end
-    
-    subgraph "Processing Layer"
-        subgraph "Core Operations"
-            ALG[Algebra Operations<br/>Ring arithmetic]
-            NTT[NTT Transform<br/>Fast multiplication]
-            HASH[Hash Functions<br/>SHAKE-128/256]
-        end
-        
-        subgraph "Specialized Operations"
-            SAMPLE[Sampling<br/>Random generation]
-            ENCODE[Encoding<br/>Serialization]
-            HINT[Hints<br/>Compression]
-        end
-    end
-    
-    subgraph "Output Layer"
-        SIG[Signature]
-        RESULT[Verification Result]
-    end
-    
-    MSG --> HASH
-    PARAMS --> ALG
-    KEYS --> ALG
-    
-    HASH --> SAMPLE
-    ALG --> NTT
-    SAMPLE --> ENCODE
-    ALG --> HINT
-    
-    ENCODE --> SIG
-    HINT --> RESULT
-    NTT --> ALG
-```
-
 ## Performance Architecture
 
 ```mermaid
