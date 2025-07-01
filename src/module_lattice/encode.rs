@@ -1,3 +1,51 @@
+//! # Polynomial Encoding and Decoding
+//!
+//! This module provides efficient encoding/decoding of ML-DSA polynomials and vectors.
+//!
+//! ## What This Module Does
+//!
+//! **Main Goal**: Convert polynomials (arrays of 256 numbers) to/from compact byte arrays 
+//! for storage and transmission.
+//!
+//! ### The Basic Problem
+//! ML-DSA polynomials have 256 coefficients, each being a field element. We need to:
+//! 1. **Pack** them efficiently into bytes using specified bit widths
+//! 2. **Unpack** them back to the original numbers with perfect accuracy
+//!
+//! ### Simple Example (4-bit encoding)
+//! ```text
+//! Input polynomial:  [1, 2, 15, 0, 7, 3, 12, 8]  (8 numbers)
+//! 
+//! Packing process:
+//! - Take 2 numbers at a time: (1,2), (15,0), (7,3), (12,8)  
+//! - Pack into bytes: 1+(2<<4)=33, 15+(0<<4)=15, 7+(3<<4)=55, 12+(8<<4)=140
+//! - Result: [33, 15, 55, 140]  (4 bytes instead of 8)
+//!
+//! Unpacking process:
+//! - From byte 33: 33&0xF=1, 33>>4=2
+//! - From byte 15: 15&0xF=15, 15>>4=0  
+//! - Result: [1, 2, 15, 0, 7, 3, 12, 8] ✅ (original numbers restored)
+//! ```
+//!
+//! ### What ML-DSA Uses This For
+//! - **Public keys**: Pack polynomial coefficients efficiently
+//! - **Signatures**: Compress signature polynomials
+//! - **Private keys**: Store secret polynomials compactly
+//! - **Different bit widths**: 1, 4, 6, 8, 10, 12 bits per coefficient depending on data range
+//!
+//! ### Round-trip Guarantee
+//! ```text
+//! encode(decode(bytes)) = bytes ✅
+//! decode(encode(poly)) = poly   ✅
+//! ```
+//!
+//! ### Why All The Complex Types?
+//! The complex `typenum` types ensure:
+//! - **Compile-time safety**: Can't mix 4-bit and 6-bit encodings by mistake
+//! - **Size correctness**: 256 coefficients always produce the exact right number of bytes
+//! - **Performance**: No runtime size checks needed
+//! - **FIPS compliance**: Follows FIPS 203/204 SimpleBitPack algorithms exactly
+
 use core::fmt::Debug;
 use core::ops::{Div, Mul, Rem};
 use hybrid_array::{
@@ -85,6 +133,20 @@ where
     }
 }
 
+/// Pack polynomial coefficients into bytes using specified bit width
+///
+/// Takes 256 field elements and packs them efficiently using D bits per element.
+/// 
+/// **Example with 4-bit encoding**:
+/// - Input: [1, 2, 15, 0, ...] (256 numbers, each 0-15)
+/// - Process: Pack 2 numbers per byte (1 + (2<<4) = 33)
+/// - Output: [33, 15, ...] (128 bytes total)
+///
+/// **How it works**:
+/// 1. Process `ValueStep` numbers at a time
+/// 2. Pack them into a single integer using bit shifts
+/// 3. Convert to `ByteStep` bytes in little-endian format
+/// 4. Repeat until all 256 coefficients are processed
 // FIPS 203: Algorithm 4 ByteEncode_d
 // FIPS 204: Algorithm 16 SimpleBitPack
 fn byte_encode<F: Field, D: EncodingSize>(vals: &DecodedValue<F>) -> EncodedPolynomial<D> {
@@ -109,6 +171,21 @@ fn byte_encode<F: Field, D: EncodingSize>(vals: &DecodedValue<F>) -> EncodedPoly
     bytes
 }
 
+/// Unpack bytes back into polynomial coefficients
+///
+/// Takes packed bytes and restores the original 256 field elements.
+///
+/// **Example with 4-bit encoding**:
+/// - Input: [33, 15, ...] (128 bytes)
+/// - Process: Extract 2 numbers per byte (33&0xF=1, 33>>4=2)
+/// - Output: [1, 2, 15, 0, ...] (256 numbers restored)
+///
+/// **How it works**:
+/// 1. Process `ByteStep` bytes at a time
+/// 2. Convert to integer in little-endian format
+/// 3. Extract `ValueStep` numbers using bit shifts and masks
+/// 4. Apply field reduction if needed (FIPS 203 special case)
+/// 5. Repeat until all bytes are processed
 // FIPS 203: Algorithm 5 ByteDecode_d(F)
 // FIPS 204: Algorithm 18 SimpleBitUnpack
 fn byte_decode<F: Field, D: EncodingSize>(bytes: &EncodedPolynomial<D>) -> DecodedValue<F> {
